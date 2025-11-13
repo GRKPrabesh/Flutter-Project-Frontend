@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'routes/routes.dart'; // Assuming the file containing AppRoute is named AppRoute.dart
 
 // Use the same primary color for consistency
 const Color primaryColor = Color(0xFF1E88E5);
@@ -197,9 +198,8 @@ class SignupScreen extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            // TODO: Navigate to LoginScreen
-            // For now, we'll navigate back (assuming LoginScreen is the previous route)
-            Navigator.pop(context);
+
+            Navigator.of(context).pushReplacementNamed(AppRoute.loginPageRoute);
           },
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 4),
