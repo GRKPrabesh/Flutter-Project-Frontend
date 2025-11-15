@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'routes.dart';
 
 const Color primaryColor = Color(0xFF1E88E5);
 
@@ -36,7 +37,7 @@ class LoginScreen extends StatelessWidget {
                 isPassword: true,
               ),
               const SizedBox(height: 24.0),
-              _buildLoginButton(),
+              _buildLoginButton(context),
               const SizedBox(height: 12.0),
               Center(
                 child: TextButton(
@@ -53,6 +54,19 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32.0),
               _buildGoogleSignInButton(),
+              const SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don't have an account? "),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoute.roleSelectRoute);
+                    },
+                    child: const Text('Sign up'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -90,10 +104,11 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildLoginButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        print('Login button pressed');
+        // After login, go to organization dashboard
+        Navigator.pushReplacementNamed(context, AppRoute.orgDashboardRoute);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
@@ -133,13 +148,11 @@ class LoginScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          // --- HERE'S THE CHANGE ---
           Image.asset(
             'assets/images/googleLogo.png', // Path to your Google logo image
             height: 24.0, // Adjust height as needed
             width: 24.0,  // Adjust width as needed
           ),
-          // --- END OF CHANGE ---
           const SizedBox(width: 8.0),
           const Text(
             'Continue with Google',
@@ -147,23 +160,6 @@ class LoginScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Login UI',
-      home: LoginScreen(),
     );
   }
 }

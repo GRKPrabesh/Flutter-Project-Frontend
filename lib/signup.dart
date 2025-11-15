@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'routes/routes.dart'; // Assuming the file containing AppRoute is named AppRoute.dart
+import 'routes.dart'; // AppRoute is defined at lib/routes.dart
 
 // Use the same primary color for consistency
 const Color primaryColor = Color(0xFF1E88E5);
