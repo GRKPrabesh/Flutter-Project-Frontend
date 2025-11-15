@@ -1,9 +1,6 @@
 
 import 'package:flutter/material.dart';
-
-
-import 'loginpage.dart';
-import 'signup.dart';
+import 'routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,9 +19,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:
-       LoginScreen(),
-      // SignupScreen(),
+      initialRoute: AppRoute.loginPageRoute,
+      routes: AppRoute.getAppRoutes(),
     );
   }
 }
