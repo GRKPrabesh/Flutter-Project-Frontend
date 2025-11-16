@@ -7,6 +7,9 @@ import 'package:securityservice/third_page.dart';
 import 'package:securityservice/uploadServicePage.dart';
 import 'package:securityservice/dashboard_user.dart';
 import 'package:securityservice/dashboard_org.dart';
+import 'package:securityservice/pages/my_bookings_page.dart';
+import 'package:securityservice/pages/profile_page.dart';
+import 'package:securityservice/pages/search_orgs_page.dart';
 
 class AppRoute {
   AppRoute._();
@@ -21,6 +24,9 @@ class AppRoute {
   static const String orgServiceUploadRoute = '/org/upload';
   static const String userDashboardRoute = '/dashboard/user';
   static const String orgDashboardRoute = '/dashboard/org';
+  static const String searchOrgsRoute = '/search';
+  static const String myBookingsRoute = '/bookings';
+  static const String profileRoute = '/profile';
 
   static Map<String, WidgetBuilder> getAppRoutes() => {
         loginPageRoute: (context) => const LoginScreen(),
@@ -43,5 +49,8 @@ class AppRoute {
         orgServiceUploadRoute: (context) => const ServiceUploadPage(),
         userDashboardRoute: (context) => const UserDashboardPage(),
         orgDashboardRoute: (context) => const OrganizationDashboardPage(),
+        searchOrgsRoute: (context) => SearchOrgsPage(),
+        myBookingsRoute: (context) => MyBookingsPage(),
+        profileRoute: (context) => const ProfilePage(),
       };
 }

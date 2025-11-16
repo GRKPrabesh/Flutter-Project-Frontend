@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'routes.dart';
+import 'dashboard_org.dart';
 
 const Color primaryColor = Color(0xFF1E88E5);
 
@@ -8,6 +9,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -29,15 +32,17 @@ class LoginScreen extends StatelessWidget {
               _buildTextField(
                 hintText: 'Email',
                 icon: Icons.email_outlined,
+                controller: emailController,
               ),
               const SizedBox(height: 16.0),
               _buildTextField(
                 hintText: 'Password',
                 icon: Icons.lock_outline,
                 isPassword: true,
+                controller: passwordController,
               ),
               const SizedBox(height: 24.0),
-              _buildLoginButton(context),
+              _buildLoginButton(context, emailController),
               const SizedBox(height: 12.0),
               Center(
                 child: TextButton(
@@ -78,6 +83,7 @@ class LoginScreen extends StatelessWidget {
     required String hintText,
     required IconData icon,
     bool isPassword = false,
+    TextEditingController? controller,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -85,6 +91,7 @@ class LoginScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hintText,
@@ -104,11 +111,19 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton(BuildContext context) {
+  Widget _buildLoginButton(BuildContext context, TextEditingController emailController) {
     return ElevatedButton(
       onPressed: () {
-        // After login, go to organization dashboard
-        Navigator.pushReplacementNamed(context, AppRoute.orgDashboardRoute);
+        // Derive organization/name from login credential (email before '@' as a simple stand-in)
+        final email = emailController.text.trim();
+        final displayName = email.isEmpty ? 'there' : (email.contains('@') ? email.split('@').first : email);
+        // Navigate to Organization Dashboard with welcome name
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OrganizationDashboardPage(displayName: displayName),
+          ),
+        );
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,

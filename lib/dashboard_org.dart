@@ -18,7 +18,47 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FA),
       appBar: AppBar(
-        title: const Text('Organization'),
+        title: Text('Welcome ! ${widget.displayName ?? 'there'}'),
+        actions: [
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder: (ctx) {
+                  final scheme = Theme.of(ctx).colorScheme;
+                  return AlertDialog(
+                    icon: Icon(Icons.logout_rounded, color: scheme.error),
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    actionsAlignment: MainAxisAlignment.end,
+                    actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: scheme.error,
+                          foregroundColor: scheme.onError,
+                        ),
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  );
+                },
+              );
+              if (shouldLogout == true) {
+                // Navigate to Login and clear stack
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              }
+            },
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Transform.translate(
@@ -141,7 +181,7 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
       ),
       child: Center(
         child: Text(
-          'Welcome, ${widget.displayName ?? 'there'}',
+          'Welcome ! ${widget.displayName ?? 'there'}',
           style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
         ),
       ),

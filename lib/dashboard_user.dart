@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:securityservice/pages/search_orgs_page.dart';
+import 'package:securityservice/pages/my_bookings_page.dart';
+import 'package:securityservice/pages/profile_page.dart';
+import 'package:securityservice/routes.dart';
 
 class UserDashboardPage extends StatefulWidget {
   const UserDashboardPage({super.key});
@@ -60,25 +64,9 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
   }
 
   Widget _buildBody(BuildContext context) {
-    if (_tabIndex == 1) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search service and organization',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-            ),
-          ),
-        ),
-      );
-    }
-    if (_tabIndex == 2 || _tabIndex == 3) {
-      return Center(child: Text(_tabIndex == 2 ? 'Cart' : 'Profile'));
-    }
+    if (_tabIndex == 1) return SearchOrgsPage();
+    if (_tabIndex == 2) return MyBookingsPage();
+    if (_tabIndex == 3) return const ProfilePage();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -154,7 +142,9 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
                     const Spacer(),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF11B47A), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24))),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoute.searchOrgsRoute);
+                      },
                       child: const Text('Connect'),
                     ),
                   ],
