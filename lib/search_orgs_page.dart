@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../api/service_api.dart';
-import '../models/org.dart';
+import 'api/service_api.dart';
+import 'models/org.dart';
 import 'book_service_page.dart';
 
 class SearchOrgsPage extends StatelessWidget {
@@ -14,6 +14,9 @@ class SearchOrgsPage extends StatelessWidget {
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
+        }
+        if (snap.hasError) {
+          return const Center(child: Text('Failed to load organizations'));
         }
         final items = snap.data ?? [];
         if (items.isEmpty) return const Center(child: Text('No organizations found'));

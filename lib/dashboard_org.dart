@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services_api.dart';
+import 'package:securityservice/profile_page.dart';
+import 'package:securityservice/routes.dart';
 
 class OrganizationDashboardPage extends StatefulWidget {
   final String? displayName; // organization or username
@@ -101,7 +103,7 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
             ),
             IconButton(
               icon: Icon(Icons.person_outline, color: _tabIndex == 3 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 3),
+              onPressed: () => Navigator.pushNamed(context, AppRoute.profileRoute),
               tooltip: 'Profile',
             ),
           ],
@@ -148,8 +150,8 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
         ),
       );
     }
-    if (_tabIndex == 2 || _tabIndex == 3) {
-      return Center(child: Text(_tabIndex == 2 ? 'Orders' : 'Profile'));
+    if (_tabIndex == 2) {
+      return const Center(child: Text('Orders'));
     }
     return ListView(
       padding: const EdgeInsets.all(16),

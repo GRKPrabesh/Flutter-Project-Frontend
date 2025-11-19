@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:securityservice/pages/search_orgs_page.dart';
-import 'package:securityservice/pages/my_bookings_page.dart';
-import 'package:securityservice/pages/profile_page.dart';
+import 'package:securityservice/search_orgs_page.dart';
+import 'package:securityservice/my_bookings_page.dart';
+import 'package:securityservice/profile_page.dart';
 import 'package:securityservice/routes.dart';
 
 class UserDashboardPage extends StatefulWidget {
@@ -54,7 +54,7 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
             ),
             IconButton(
               icon: Icon(Icons.person_outline, color: _tabIndex == 3 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 3),
+              onPressed: () => Navigator.pushNamed(context, AppRoute.profileRoute),
             ),
           ],
         ),
@@ -66,7 +66,6 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
   Widget _buildBody(BuildContext context) {
     if (_tabIndex == 1) return SearchOrgsPage();
     if (_tabIndex == 2) return MyBookingsPage();
-    if (_tabIndex == 3) return const ProfilePage();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [

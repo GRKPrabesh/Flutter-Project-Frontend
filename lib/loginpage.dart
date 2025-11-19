@@ -11,6 +11,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final passwordObscure = ValueNotifier<bool>(true);
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -39,6 +40,7 @@ class LoginScreen extends StatelessWidget {
                 hintText: 'Password',
                 icon: Icons.lock_outline,
                 isPassword: true,
+                obscureNotifier: passwordObscure,
                 controller: passwordController,
               ),
               const SizedBox(height: 24.0),
@@ -84,28 +86,37 @@ class LoginScreen extends StatelessWidget {
     required IconData icon,
     bool isPassword = false,
     TextEditingController? controller,
+    ValueNotifier<bool>? obscureNotifier,
   }) {
+    final notifier = obscureNotifier ?? ValueNotifier<bool>(isPassword);
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          hintText: hintText,
-          suffixIcon: isPassword
-              ? IconButton(
-            icon: const Icon(Icons.remove_red_eye, color: Colors.grey),
-            onPressed: () {
-              // TODO: Implement toggle password visibility
-            },
-          )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16.0, vertical: 16.0),
+      child: ValueListenableBuilder<bool>(
+        valueListenable: notifier,
+        builder: (context, obscure, _) => TextField(
+          controller: controller,
+          obscureText: isPassword ? obscure : false,
+          decoration: InputDecoration(
+            hintText: hintText,
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      obscure ? Icons.remove_red_eye : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      // TODO: Implement toggle password visibility
+                      notifier.value = !notifier.value;
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16.0, vertical: 16.0),
+          ),
         ),
       ),
     );

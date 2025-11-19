@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../api/service_api.dart';
-import '../models/service.dart';
+import 'api/service_api.dart';
+import 'models/service.dart';
 
 class BookServicePage extends StatefulWidget {
   final String orgId;

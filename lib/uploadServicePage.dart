@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:securityservice/routes.dart';
 
 class ServiceUploadPage extends StatefulWidget {
@@ -10,13 +10,12 @@ class ServiceUploadPage extends StatefulWidget {
 }
 
 class _UploadPageState extends State<ServiceUploadPage> {
-  PlatformFile? _file;
+  XFile? _file;
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(withData: false);
-    if (result != null && result.files.isNotEmpty) {
-      setState(() => _file = result.files.single);
-    }
+    final typeGroup = XTypeGroup(label: 'documents', extensions: ['pdf', 'jpg', 'jpeg', 'png']);
+    final picked = await openFile(acceptedTypeGroups: [typeGroup]);
+    if (picked != null) setState(() => _file = picked);
   }
 
   @override
@@ -52,8 +51,13 @@ class _UploadPageState extends State<ServiceUploadPage> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 4),
-                          Text('${(_file!.size / 1024).toStringAsFixed(1)} KB',
-                              style: const TextStyle(color: Colors.black54)),
+                          FutureBuilder<int>(
+                            future: _file!.length(),
+                            builder: (context, snap) => Text(
+                              snap.hasData ? '${((snap.data! / 1024)).toStringAsFixed(1)} KB' : '',
+                              style: const TextStyle(color: Colors.black54),
+                            ),
+                          ),
                         ],
                       ),
               ),

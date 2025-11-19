@@ -7,9 +7,9 @@ import 'package:securityservice/third_page.dart';
 import 'package:securityservice/uploadServicePage.dart';
 import 'package:securityservice/dashboard_user.dart';
 import 'package:securityservice/dashboard_org.dart';
-import 'package:securityservice/pages/my_bookings_page.dart';
-import 'package:securityservice/pages/profile_page.dart';
-import 'package:securityservice/pages/search_orgs_page.dart';
+import 'package:securityservice/my_bookings_page.dart';
+import 'package:securityservice/profile_page.dart';
+import 'package:securityservice/search_orgs_page.dart';
 
 class AppRoute {
   AppRoute._();
@@ -49,8 +49,8 @@ class AppRoute {
         orgServiceUploadRoute: (context) => const ServiceUploadPage(),
         userDashboardRoute: (context) => const UserDashboardPage(),
         orgDashboardRoute: (context) => const OrganizationDashboardPage(),
-        searchOrgsRoute: (context) => SearchOrgsPage(),
-        myBookingsRoute: (context) => MyBookingsPage(),
+        searchOrgsRoute: (context) => Scaffold(appBar: AppBar(title: const Text('Search')), body: SearchOrgsPage()),
+        myBookingsRoute: (context) => Scaffold(appBar: AppBar(title: const Text('My Bookings')), body: MyBookingsPage()),
         profileRoute: (context) => const ProfilePage(),
       };
 }
