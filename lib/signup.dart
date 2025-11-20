@@ -1,25 +1,37 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'routes.dart'; // AppRoute is defined at lib/routes.dart
+import 'package:http/http.dart' as http;
+import 'routes.dart'; // Your AppRoute file
 
-// Use the same primary color for consistency
 const Color primaryColor = Color(0xFF1E88E5);
-const Color inputFillColor = Color(0xFFF0F0F0); // Slightly darker gray for better contrast
+const Color inputFillColor = Color(0xFFF0F0F0);
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
+
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+  bool passwordVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Transparent AppBar to allow the background to show, matching modern design
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87), // Style back button
+        iconTheme: const IconThemeData(color: Colors.black87),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () {
-            // TODO: Implement navigation back to LoginScreen
             Navigator.pop(context);
           },
         ),
@@ -28,10 +40,8 @@ class SignupScreen extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              // Title
               const Text(
                 'Create an Account',
                 textAlign: TextAlign.center,
@@ -42,44 +52,34 @@ class SignupScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40.0),
-
-              // Full Name Field
               _buildTextField(
+                controller: fullNameController,
                 hintText: 'Full Name',
                 keyboardType: TextInputType.name,
               ),
               const SizedBox(height: 18.0),
-
-              // Email Field
               _buildTextField(
+                controller: emailController,
                 hintText: 'Email',
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 18.0),
-
-              // Phone Number Field
               _buildTextField(
+                controller: phoneController,
                 hintText: 'Phone Number',
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 18.0),
-
-              // Password Field
               _buildTextField(
+                controller: passwordController,
                 hintText: 'Password',
                 isPassword: true,
               ),
               const SizedBox(height: 32.0),
-
-              // SIGN UP Button
               _buildSignupButton(),
               const SizedBox(height: 32.0),
-
-              // Google Sign-up (reusing the style)
               _buildGoogleSignInButton(),
               const SizedBox(height: 50.0),
-
-              // Login Prompt
               _buildLoginPrompt(context),
             ],
           ),
@@ -88,47 +88,50 @@ class SignupScreen extends StatelessWidget {
     );
   }
 
-  // Helper function for text fields
   Widget _buildTextField({
+    required TextEditingController controller,
     required String hintText,
     bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: inputFillColor, // Light grey background
+        color: inputFillColor,
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: TextField(
+        controller: controller,
         keyboardType: keyboardType,
-        obscureText: isPassword,
+        obscureText: isPassword && !passwordVisible,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(color: Colors.grey),
-          // Suffix Icon (Eye icon) for password visibility
           suffixIcon: isPassword
               ? IconButton(
-            icon: const Icon(Icons.remove_red_eye, color: Colors.grey),
-            onPressed: () {
-              // TODO: Implement toggle password visibility state
-            },
-          )
+                  icon: Icon(
+                    passwordVisible
+                        ? Icons.visibility_off
+                        : Icons.remove_red_eye,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      passwordVisible = !passwordVisible;
+                    });
+                  },
+                )
               : null,
-          border: InputBorder.none, // Removes default border
-          contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20.0, vertical: 18.0),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18.0),
         ),
       ),
     );
   }
 
-  // Helper function for the main button
   Widget _buildSignupButton() {
     return ElevatedButton(
-      onPressed: () {
-        // TODO: Implement user registration logic
-        print('Sign Up button pressed');
-      },
+      onPressed: isLoading ? null : registerUser,
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
@@ -139,22 +142,22 @@ class SignupScreen extends StatelessWidget {
         elevation: 5,
         shadowColor: primaryColor.withOpacity(0.4),
       ),
-      child: const Text(
-        'SIGN UP',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-        ),
-      ),
+      child: isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Text(
+              'SIGN UP',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
     );
   }
 
-  // Helper function for Google sign-up
   Widget _buildGoogleSignInButton() {
     return OutlinedButton(
       onPressed: () {
-        // TODO: Implement Google sign-up logic
         print('Continue with Google pressed (Sign Up)');
       },
       style: OutlinedButton.styleFrom(
@@ -171,7 +174,6 @@ class SignupScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          // Ensure your asset is correctly configured in pubspec.yaml!
           Image.asset(
             'assets/images/googleLogo.png',
             height: 24.0,
@@ -187,7 +189,6 @@ class SignupScreen extends StatelessWidget {
     );
   }
 
-  // Helper function for the login prompt at the bottom
   Widget _buildLoginPrompt(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -198,8 +199,8 @@ class SignupScreen extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-
-            Navigator.of(context).pushReplacementNamed(AppRoute.loginPageRoute);
+            Navigator.of(context)
+                .pushReplacementNamed(AppRoute.loginPageRoute);
           },
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -215,5 +216,55 @@ class SignupScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> registerUser() async {
+    if (fullNameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final url = Uri.parse('http://localhost:5000/api/auth/register');
+    final body = jsonEncode({
+      "fullName": fullNameController.text.trim(),
+      "email": emailController.text.trim(),
+      "phone": phoneController.text.trim(),
+      "password": passwordController.text.trim(),
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        print('Success: $data');
+        Navigator.pushReplacementNamed(context, AppRoute.loginPageRoute);
+      } else {
+        final errorData = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text(errorData['message'] ?? 'Registration failed')),
+        );
+      }
+    } catch (e) {
+      print('Exception: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 }
