@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:securityservice/routes.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'api/config.dart';
+import 'routes.dart';
+import 'verify_otp.dart';
 
 class ServiceUploadPage extends StatefulWidget {
   const ServiceUploadPage({super.key});
@@ -20,6 +25,11 @@ class _UploadPageState extends State<ServiceUploadPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Organization registration data passed from ThirdPage
+    final orgArgs =
+        (ModalRoute.of(context)?.settings.arguments as Map<String, String>?) ??
+            const <String, String>{};
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -80,25 +90,99 @@ class _UploadPageState extends State<ServiceUploadPage> {
                   ),
                   elevation: 3,
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (_file == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please choose a file to upload')),
+                      const SnackBar(
+                          content:
+                              Text('Please choose a document to upload')),
                     );
                     return;
                   }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Selected: ${_file!.name}')),
-                  );
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoute.loginPageRoute,
-                    (route) => false,
-                  );
+
+                  final email = orgArgs['email'] ?? '';
+                  final password = orgArgs['password'] ?? '';
+                  final companyName = orgArgs['companyName'] ?? '';
+                  final companyAddress = orgArgs['address'] ?? '';
+                  final owner = orgArgs['owner'] ?? companyName;
+                  final panNumber = orgArgs['panNumber'] ?? '';
+                  final phone = orgArgs['phone'] ?? '';
+
+                  if (email.isEmpty ||
+                      password.isEmpty ||
+                      companyName.isEmpty ||
+                      companyAddress.isEmpty ||
+                      panNumber.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Missing organization details. Please go back and complete the form.')),
+                    );
+                    return;
+                  }
+
+                  final url =
+                      Uri.parse('${AppConfig.baseUrl}/api/auth/register');
+                  final body = jsonEncode({
+                    "name": owner,
+                    "email": email,
+                    "password": password,
+                    "phone": phone,
+                    "role": "org",
+                    "companyName": companyName,
+                    "companyAddress": companyAddress,
+                    "panNumber": panNumber,
+                    // For now we just send file name as document reference
+                    "docPic": _file!.name,
+                  });
+
+                  try {
+                    final res = await http.post(
+                      url,
+                      headers: {'Content-Type': 'application/json'},
+                      body: body,
+                    );
+
+                    if (res.statusCode == 200 || res.statusCode == 201) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Organization registered. Please verify OTP.')),
+                      );
+                      if (!mounted) return;
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VerifyOtpPage(email: email),
+                        ),
+                      );
+                    } else {
+                      Map<String, dynamic> data = const {};
+                      if (res.body.isNotEmpty) {
+                        try {
+                          data = jsonDecode(res.body) as Map<String, dynamic>;
+                        } catch (_) {
+                          // ignore JSON parse errors
+                        }
+                      }
+                      final msg =
+                          data['message']?.toString() ?? 'Registration failed';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(msg)),
+                      );
+                    }
+                  } catch (_) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Network error. Please try again.')),
+                    );
+                  }
                 },
                 child: const Text(
                   'SUBMIT REGISTRATION',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

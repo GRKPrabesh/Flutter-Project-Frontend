@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'api/config.dart';
 import 'routes.dart'; // Your AppRoute file
+import 'verify_otp.dart';
 
 const Color primaryColor = Color(0xFF1E88E5);
 const Color inputFillColor = Color(0xFFF0F0F0);
@@ -231,12 +233,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse('http://localhost:5000/api/auth/register');
+    // Use shared API base URL config so it works across web/desktop/emulator
+    final url = Uri.parse('${AppConfig.baseUrl}/api/auth/register');
+    // Backend expects: name, email, password, phone, role (user/org/admin)
     final body = jsonEncode({
-      "fullName": fullNameController.text.trim(),
+      "name": fullNameController.text.trim(),
       "email": emailController.text.trim(),
       "phone": phoneController.text.trim(),
       "password": passwordController.text.trim(),
+      "role": "user",
     });
 
     try {
@@ -247,11 +252,30 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
+        Map<String, dynamic> data = {};
+        if (response.body.isNotEmpty) {
+          try {
+            data = jsonDecode(response.body) as Map<String, dynamic>;
+          } catch (_) {
+            // ignore JSON parse errors for empty/invalid bodies
+          }
+        }
         print('Success: $data');
-        Navigator.pushReplacementNamed(context, AppRoute.loginPageRoute);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VerifyOtpPage(email: emailController.text.trim()),
+          ),
+        );
       } else {
-        final errorData = jsonDecode(response.body);
+        Map<String, dynamic> errorData = {};
+        if (response.body.isNotEmpty) {
+          try {
+            errorData = jsonDecode(response.body) as Map<String, dynamic>;
+          } catch (_) {
+            // ignore JSON parse errors
+          }
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:

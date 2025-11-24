@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'models/app_user.dart';
+import 'routes.dart';
+import 'services/app_user_repository.dart';
+
 class SecondPage extends StatefulWidget {
   final String submitLabel;
-  final VoidCallback? onSubmit;
+  final UserRole role;
 
-  const SecondPage({super.key, this.submitLabel = 'REGISTER', this.onSubmit});
+  const SecondPage({
+    super.key,
+    this.submitLabel = 'REGISTER',
+    this.role = UserRole.seeker,
+  });
 
   @override
   State<SecondPage> createState() => _SecondPageState();
@@ -17,7 +25,8 @@ class _SecondPageState extends State<SecondPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
-  final _contact = TextEditingController();
+  final _phoneNumber = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -26,13 +35,14 @@ class _SecondPageState extends State<SecondPage> {
     _email.dispose();
     _password.dispose();
     _confirmPassword.dispose();
-    _contact.dispose();
+    _phoneNumber.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -41,113 +51,81 @@ class _SecondPageState extends State<SecondPage> {
         title: const Text('Complete account setup'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              _buildField(
+                label: 'First Name',
                 controller: _firstName,
-                decoration: InputDecoration(
-                  hintText: 'First Name',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              _buildField(
+                label: 'Last Name',
                 controller: _lastName,
-                decoration: InputDecoration(
-                  hintText: 'Last Name',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              _buildField(
+                label: 'Email',
                 controller: _email,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
                 keyboardType: TextInputType.emailAddress,
+                validator: (value) =>
+                    value == null || value.trim().isEmpty ? 'Enter email' : null,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              _buildField(
+                label: 'Password',
                 controller: _password,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
                 obscureText: true,
+                validator: (value) => (value == null || value.length < 6)
+                    ? 'Min 6 characters'
+                    : null,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              _buildField(
+                label: 'Confirm Password',
                 controller: _confirmPassword,
-                decoration: InputDecoration(
-                  hintText: 'Confirm Password',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
                 obscureText: true,
+                validator: (value) =>
+                    value != _password.text ? 'Passwords do not match' : null,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _contact,
-                decoration: InputDecoration(
-                  hintText: 'Contact',
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+              _buildField(
+                label: 'Phone Number',
+                controller: _phoneNumber,
                 keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.done,
+                validator: (value) =>
+                    value == null || value.length < 7 ? 'Enter phone' : null,
               ),
               const SizedBox(height: 24),
               SizedBox(
-                height: 52,
+                height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E88E5),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 3,
+                    elevation: 4,
                   ),
-                  onPressed: widget.onSubmit ?? () {},
-                  child: Text(
-                    widget.submitLabel,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  onPressed: _isSubmitting ? null : _submit,
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          widget.submitLabel,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -155,5 +133,72 @@ class _SecondPageState extends State<SecondPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildField({
+    required String label,
+    required TextEditingController controller,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          obscureText: obscureText,
+          validator: validator ??
+              (value) => value == null || value.trim().isEmpty
+                  ? 'Required'
+                  : null,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSubmitting = true);
+
+    final repo = AppUserRepository.instance;
+    try {
+      repo.registerSeeker(
+        email: _email.text.trim(),
+        password: _password.text,
+        firstName: _firstName.text.trim(),
+        lastName: _lastName.text.trim(),
+        phone: _phoneNumber.text.trim(),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created. Please login.')),
+      );
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoute.loginPageRoute,
+        (route) => false,
+      );
+    } on StateError catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 }

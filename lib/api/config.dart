@@ -1,6 +1,7 @@
 class AppConfig {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+  /// Base URL for the Protego backend API.
+  /// Change this if your Node server runs on a different port/host.
+  static const String baseUrl = 'http://localhost:5000';
 }
+
+

@@ -34,9 +34,16 @@ class SearchOrgsPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(o.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Row(children: [const Icon(Icons.location_on, size: 14), const SizedBox(width: 4), Expanded(child: Text(o.address, overflow: TextOverflow.ellipsis))]),
-                  Row(children: [const Icon(Icons.call, size: 14), const SizedBox(width: 4), Text(o.phone)]),
+                  const SizedBox(height: 4),
+                  if (o.address.isNotEmpty) Row(children: [const Icon(Icons.location_on, size: 14, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(o.address, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))]),
+                  if (o.phone.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(children: [const Icon(Icons.call, size: 14, color: Colors.grey), const SizedBox(width: 4), Text(o.phone, style: const TextStyle(fontSize: 13))]),
+                  ],
+                  if (o.email.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(children: [const Icon(Icons.email, size: 14, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(o.email, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))]),
+                  ],
                 ])),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF11B47A), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24))),

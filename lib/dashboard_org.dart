@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'services_api.dart';
 import 'package:securityservice/profile_page.dart';
 import 'package:securityservice/routes.dart';
+import 'api/service_type_api.dart';
+import 'api/org_service_api.dart';
+import 'package:securityservice/search_companies_page.dart';
+import 'package:securityservice/guards_management_page.dart';
+import 'package:securityservice/org_orders_page.dart';
 
 class OrganizationDashboardPage extends StatefulWidget {
   final String? displayName; // organization or username
@@ -13,7 +18,10 @@ class OrganizationDashboardPage extends StatefulWidget {
 }
 
 class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
-  int _tabIndex = 0; // 0: Home, 1: Search, 2: Orders, 3: Profile
+  int _tabIndex = 0; // 0: Home, 1: Search, 2: Orders, 3: Guards, 4: Profile
+  final _orgServiceApi = OrgServiceApi();
+  List<Map<String, dynamic>> _services = [];
+  bool _isLoadingServices = false;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +110,12 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
               tooltip: 'Orders',
             ),
             IconButton(
-              icon: Icon(Icons.person_outline, color: _tabIndex == 3 ? const Color(0xFF1E88E5) : Colors.black54),
+              icon: Icon(Icons.shield, color: _tabIndex == 3 ? const Color(0xFF1E88E5) : Colors.black54),
+              onPressed: () => setState(() => _tabIndex = 3),
+              tooltip: 'Guards',
+            ),
+            IconButton(
+              icon: Icon(Icons.person_outline, color: _tabIndex == 4 ? const Color(0xFF1E88E5) : Colors.black54),
               onPressed: () => Navigator.pushNamed(context, AppRoute.profileRoute),
               tooltip: 'Profile',
             ),
@@ -133,37 +146,95 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
     );
   }
 
+  Future<void> _loadServices() async {
+    setState(() => _isLoadingServices = true);
+    try {
+      final services = await _orgServiceApi.fetchServices();
+      setState(() {
+        _services = services;
+        _isLoadingServices = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingServices = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading services: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
   Widget _buildBody() {
     if (_tabIndex == 1) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search service and organization',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-            ),
-          ),
-        ),
-      );
+      return const SearchCompaniesPage();
     }
     if (_tabIndex == 2) {
-      return const Center(child: Text('Orders'));
+      return const OrgOrdersPage();
     }
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _headerCard(),
-        const SizedBox(height: 16),
-        const Text('Your services', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        _serviceTile('Guard Patrol', 'Night patrol around premises', 'Rs. 2500 / shift'),
-        const SizedBox(height: 8),
-        _serviceTile('CCTV Monitoring', '24/7 monitoring and alerting', 'Rs. 1500 / day'),
-      ],
+    if (_tabIndex == 3) {
+      return const GuardsManagementPage();
+    }
+    return RefreshIndicator(
+      onRefresh: _loadServices,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _headerCard(),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Your services', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              if (_isLoadingServices)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isLoadingServices && _services.isEmpty)
+            const Center(child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: CircularProgressIndicator(),
+            ))
+          else if (_services.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  children: [
+                    Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text('No services yet', style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Text('Tap the + button to add your first service', 
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._services.map((service) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _serviceTile(
+                service['name']?.toString() ?? '',
+                service['description']?.toString() ?? '',
+                'Rs. ${service['price']?.toString() ?? '0'}',
+                serviceType: service['serviceTypeId']?['name']?.toString(),
+              ),
+            )),
+        ],
+      ),
     );
   }
 
@@ -190,7 +261,7 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
     );
   }
 
-  Widget _serviceTile(String name, String desc, String price) {
+  Widget _serviceTile(String name, String desc, String price, {String? serviceType, String? serviceId}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -213,7 +284,23 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Row(
+                  children: [
+                    Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700))),
+                    if (serviceType != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E88E5).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          serviceType,
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF1E88E5), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 2),
                 Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
@@ -228,9 +315,18 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
 
   Future<void> _openAddServiceSheet(BuildContext context) async {
     final formKey = GlobalKey<FormState>();
-    String? selectedService;
+    final serviceTypeApi = ServiceTypeApi();
+    final orgServiceApi = OrgServiceApi();
+    
+    String? selectedServiceTypeId;
+    final nameCtl = TextEditingController();
     final descCtl = TextEditingController();
-    final chargeCtl = TextEditingController();
+    final costCtl = TextEditingController();
+    final hourlyRateCtl = TextEditingController(text: '300');
+    bool isLoading = false;
+    bool showAddTypeField = false;
+    final newTypeNameCtl = TextEditingController();
+    final newTypeDescCtl = TextEditingController();
 
     await showModalBottomSheet(
       context: context,
@@ -239,85 +335,284 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-            top: 16,
-          ),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Add Service', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 12),
-                FutureBuilder<List<String>>(
-                  future: ServicesApi.fetchServiceNames(),
-                  builder: (context, snapshot) {
-                    final items = snapshot.data ?? const <String>[];
-                    return DropdownButtonFormField<String>(
-                      value: selectedService,
-                      decoration: InputDecoration(
-                        hintText: 'Select service',
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+                top: 16,
+              ),
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Add Service', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
                       ),
-                      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                      onChanged: (v) => selectedService = v,
-                      validator: (v) => v == null ? 'Please select a service' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: descCtl,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: 'Description',
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: nameCtl,
+                        decoration: InputDecoration(
+                          labelText: 'Service Name',
+                          hintText: 'Enter service name',
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Service name is required' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: serviceTypeApi.fetchServiceTypes(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(),
+                            ));
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error loading service types: ${snapshot.error}');
+                          }
+                          final serviceTypes = snapshot.data ?? [];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              DropdownButtonFormField<String>(
+                                value: selectedServiceTypeId,
+                                decoration: InputDecoration(
+                                  labelText: 'Service Type',
+                                  hintText: 'Select service type',
+                                  filled: true,
+                                  fillColor: Colors.grey.shade100,
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                                items: [
+                                  ...serviceTypes.map((e) => DropdownMenuItem(
+                                    value: e['_id']?.toString() ?? '',
+                                    child: Text(e['name']?.toString() ?? ''),
+                                  )),
+                                  const DropdownMenuItem(
+                                    value: '__add_new__',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.add, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Add New Service Type'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                onChanged: (v) {
+                                  setState(() {
+                                    if (v == '__add_new__') {
+                                      showAddTypeField = true;
+                                      selectedServiceTypeId = null;
+                                    } else {
+                                      showAddTypeField = false;
+                                      selectedServiceTypeId = v;
+                                    }
+                                  });
+                                },
+                                validator: (v) => (v == null || v == '__add_new__') ? 'Please select a service type' : null,
+                              ),
+                              if (showAddTypeField) ...[
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: newTypeNameCtl,
+                                  decoration: InputDecoration(
+                                    labelText: 'New Service Type Name',
+                                    hintText: 'Enter new service type',
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  validator: showAddTypeField
+                                      ? (v) => (v == null || v.trim().isEmpty) ? 'Service type name is required' : null
+                                      : null,
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: newTypeDescCtl,
+                                  maxLines: 2,
+                                  decoration: InputDecoration(
+                                    labelText: 'Service Type Description (Optional)',
+                                    hintText: 'Enter description',
+                                    filled: true,
+                                    fillColor: Colors.grey.shade100,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Create Service Type'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () async {
+                                    if (newTypeNameCtl.text.trim().isEmpty) {
+                                      ScaffoldMessenger.of(ctx).showSnackBar(
+                                        const SnackBar(content: Text('Please enter service type name')),
+                                      );
+                                      return;
+                                    }
+                                    try {
+                                      setState(() => isLoading = true);
+                                      final newType = await serviceTypeApi.createServiceType(
+                                        name: newTypeNameCtl.text.trim(),
+                                        description: newTypeDescCtl.text.trim().isEmpty 
+                                            ? null 
+                                            : newTypeDescCtl.text.trim(),
+                                      );
+                                      setState(() {
+                                        selectedServiceTypeId = newType['_id']?.toString();
+                                        showAddTypeField = false;
+                                        newTypeNameCtl.clear();
+                                        newTypeDescCtl.clear();
+                                      });
+                                      ScaffoldMessenger.of(ctx).showSnackBar(
+                                        const SnackBar(content: Text('Service type created successfully')),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(ctx).showSnackBar(
+                                        SnackBar(content: Text('Error: ${e.toString()}')),
+                                      );
+                                    } finally {
+                                      setState(() => isLoading = false);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: descCtl,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          hintText: 'Enter service description',
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: costCtl,
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          labelText: 'Cost',
+                          hintText: 'Enter cost (e.g., 1500)',
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          prefixText: 'Rs. ',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Cost is required';
+                          final cost = double.tryParse(v);
+                          if (cost == null || cost <= 0) return 'Please enter a valid cost';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: hourlyRateCtl,
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          labelText: 'Hourly Rate (Rs.)',
+                          hintText: 'Enter hourly rate (default: 300)',
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          prefixText: 'Rs. ',
+                          helperText: 'Rate per hour for this service',
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Hourly rate is required';
+                          final rate = double.tryParse(v);
+                          if (rate == null || rate <= 0) return 'Please enter a valid hourly rate';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E88E5),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: isLoading ? null : () async {
+                            if (!formKey.currentState!.validate()) return;
+                            if (selectedServiceTypeId == null) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                const SnackBar(content: Text('Please select a service type')),
+                              );
+                              return;
+                            }
+                            try {
+                              setState(() => isLoading = true);
+                              await orgServiceApi.createService(
+                                name: nameCtl.text.trim(),
+                                price: double.parse(costCtl.text.trim()),
+                                serviceTypeId: selectedServiceTypeId!,
+                                description: descCtl.text.trim(),
+                                hourlyRate: double.parse(hourlyRateCtl.text.trim()),
+                              );
+                              if (ctx.mounted) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Service "${nameCtl.text}" added successfully')),
+                                );
+                                // Refresh the services list
+                                _loadServices();
+                              }
+                            } catch (e) {
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(content: Text('Error: ${e.toString()}')),
+                                );
+                              }
+                            } finally {
+                              if (ctx.mounted) {
+                                setState(() => isLoading = false);
+                              }
+                            }
+                          },
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Text('ADD SERVICE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ],
                   ),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter description' : null,
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: chargeCtl,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'Charge (e.g., 1500)',
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter charge' : null,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 52,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E88E5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      if (!formKey.currentState!.validate()) return;
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Added: ${selectedService ?? ''} - Rs. ${chargeCtl.text}')),
-                      );
-                    },
-                    child: const Text('ADD SERVICE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

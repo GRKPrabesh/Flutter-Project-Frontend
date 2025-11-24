@@ -53,9 +53,13 @@ class _RoleSelectPageState extends State<RoleSelectPage> {
                     ? null
                     : () {
                         if (selected == _RoleOption.hireGuards) {
-                          Navigator.pushNamed(context, AppRoute.secondPageRoute);
+                          // Go to real backend-powered user signup
+                          Navigator.pushNamed(
+                              context, AppRoute.signUpRoute);
                         } else {
-                          Navigator.pushNamed(context, AppRoute.orgStep1Route);
+                          // Organization registration flow (business details + documents)
+                          Navigator.pushNamed(
+                              context, AppRoute.thirdPageRoute);
                         }
                       },
                 child: const Text(
