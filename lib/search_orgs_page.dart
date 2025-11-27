@@ -38,19 +38,27 @@ class SearchOrgsPage extends StatelessWidget {
                   if (o.address.isNotEmpty) Row(children: [const Icon(Icons.location_on, size: 14, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(o.address, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))]),
                   if (o.phone.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Row(children: [const Icon(Icons.call, size: 14, color: Colors.grey), const SizedBox(width: 4), Text(o.phone, style: const TextStyle(fontSize: 13))]),
+                    Row(children: [const Icon(Icons.call, size: 14, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(o.phone, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))]),
                   ],
                   if (o.email.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Row(children: [const Icon(Icons.email, size: 14, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(o.email, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13)))]),
                   ],
                 ])),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF11B47A), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24))),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookServicePage(orgId: o.id, orgName: o.name)));
-                  },
-                  child: const Text('Connect'),
+                Flexible(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF11B47A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      minimumSize: const Size(0, 0),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookServicePage(orgId: o.id, orgName: o.name)));
+                    },
+                    child: const Text('Connect', style: TextStyle(fontSize: 13)),
+                  ),
                 ),
               ]),
             );

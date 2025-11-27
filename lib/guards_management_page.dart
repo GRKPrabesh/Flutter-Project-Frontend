@@ -61,12 +61,47 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text('Guards Management'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Guards Management',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadGuards,
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1E88E5)),
+              onPressed: _loadGuards,
+              tooltip: 'Refresh',
+            ),
           ),
         ],
       ),
@@ -74,36 +109,46 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
         children: [
           // Filter buttons
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 Expanded(
-                  child: ChoiceChip(
-                    label: const Text('All'),
-                    selected: _filterStatus == 'all',
-                    onSelected: (selected) {
-                      if (selected) setState(() => _filterStatus = 'all');
-                    },
+                  child: _buildFilterChip(
+                    'All',
+                    _filterStatus == 'all',
+                    const Color(0xFF1E88E5),
+                    _guards.length,
+                    () => setState(() => _filterStatus = 'all'),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ChoiceChip(
-                    label: Text('Free (${_freeGuards.length})'),
-                    selected: _filterStatus == 'free',
-                    onSelected: (selected) {
-                      if (selected) setState(() => _filterStatus = 'free');
-                    },
+                  child: _buildFilterChip(
+                    'Free',
+                    _filterStatus == 'free',
+                    const Color(0xFF4CAF50),
+                    _freeGuards.length,
+                    () => setState(() => _filterStatus = 'free'),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ChoiceChip(
-                    label: Text('On Duty (${_onDutyGuards.length})'),
-                    selected: _filterStatus == 'onDuty',
-                    onSelected: (selected) {
-                      if (selected) setState(() => _filterStatus = 'onDuty');
-                    },
+                  child: _buildFilterChip(
+                    'On Duty',
+                    _filterStatus == 'onDuty',
+                    const Color(0xFFFF6B35),
+                    _onDutyGuards.length,
+                    () => setState(() => _filterStatus = 'onDuty'),
                   ),
                 ),
               ],
@@ -118,23 +163,67 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text(
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.people_outline_rounded,
+                                size: 64,
+                                color: Color(0xFF1E88E5),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
                               'No guards found',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                              style: TextStyle(
+                                color: Color(0xFF1A1A1A),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 8),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 32),
+                            Text(
+                              'Add your first guard to get started',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF1E88E5).withValues(alpha: 0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
                               child: ElevatedButton.icon(
-                                icon: const Icon(Icons.person_add),
-                                label: const Text('Add Guard'),
+                                icon: const Icon(Icons.person_add_rounded, size: 22),
+                                label: const Text(
+                                  'Add Guard',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
                                 onPressed: () => _showAddGuardDialog(context),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1E88E5),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
                               ),
                             ),
@@ -144,9 +233,9 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
                     : RefreshIndicator(
                         onRefresh: _loadGuards,
                         child: ListView.separated(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                           itemCount: _displayGuards.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final guard = _displayGuards[index];
                             return _buildGuardCard(guard);
@@ -156,35 +245,123 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddGuardDialog(context),
-        icon: const Icon(Icons.person_add),
-        label: const Text('Add Guard'),
-        backgroundColor: const Color(0xFF1E88E5),
-        foregroundColor: Colors.white,
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(bottom: 80),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddGuardDialog(context),
+          icon: const Icon(Icons.person_add_rounded, size: 20),
+          label: const Text(
+            'Add Guard',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.white,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildFilterChip(String label, bool isSelected, Color color, int count, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(colors: [color, color.withValues(alpha: 0.8)])
+              : null,
+          color: isSelected ? null : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.3)
+                    : color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                count.toString(),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : color,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildGuardCard(Map<String, dynamic> guard) {
     final isOnDuty = guard['dutyStatus']?.toString() == 'onDuty';
     final isFree = !isOnDuty && (guard['status']?.toString() == 'active' || guard['status'] == null);
+    final statusColor = isOnDuty
+        ? const Color(0xFFFF6B35)
+        : isFree
+            ? const Color(0xFF4CAF50)
+            : Colors.grey;
     
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: isOnDuty ? Colors.green : Colors.transparent,
+          color: statusColor.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -193,14 +370,32 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                backgroundColor: isOnDuty ? Colors.green.shade50 : Colors.blue.shade50,
-                child: Icon(
-                  Icons.shield,
-                  color: isOnDuty ? Colors.green : Colors.blue,
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      statusColor,
+                      statusColor.withValues(alpha: 0.7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: statusColor.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.shield_rounded,
+                  color: Colors.white,
+                  size: 30,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,94 +403,183 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
                     Text(
                       guard['name']?.toString() ?? 'Unknown',
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
                       ),
                     ),
-                    if (guard['experience']?.toString().isNotEmpty ?? false)
-                      Text(
-                        'Experience: ${guard['experience']}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                    if (guard['experience']?.toString().isNotEmpty ?? false) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.work_outline_rounded, size: 14, color: Colors.grey.shade600),
+                          const SizedBox(width: 4),
+                          Text(
+                            guard['experience']?.toString() ?? '',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
+                    ],
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isOnDuty 
-                      ? Colors.green.shade50 
-                      : isFree 
-                          ? Colors.blue.shade50 
-                          : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [
+                      statusColor,
+                      statusColor.withValues(alpha: 0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: statusColor.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Text(
                   isOnDuty ? 'On Duty' : isFree ? 'Free' : 'Inactive',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isOnDuty 
-                        ? Colors.green.shade700 
-                        : isFree 
-                            ? Colors.blue.shade700 
-                            : Colors.grey.shade700,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           if (guard['phone']?.toString().isNotEmpty ?? false)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E88E5).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF1E88E5).withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.phone, size: 16, color: Colors.grey),
-                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E88E5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.phone_rounded, size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     guard['phone']?.toString() ?? '',
-                    style: const TextStyle(fontSize: 14),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
                 ],
               ),
             ),
           if (guard['email']?.toString().isNotEmpty ?? false)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.email, size: 16, color: Colors.grey),
-                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.email_rounded, size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       guard['email']?.toString() ?? '',
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A1A1A),
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton.icon(
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text('Edit'),
-                onPressed: () => _showEditGuardDialog(context, guard),
-              ),
-              if (isFree)
-                TextButton.icon(
-                  icon: const Icon(Icons.delete, size: 16),
-                  label: const Text('Delete'),
-                  onPressed: () => _deleteGuard(guard['_id']?.toString() ?? ''),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.edit_rounded, size: 18, color: Colors.white),
+                    label: const Text(
+                      'Edit',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    onPressed: () => _showEditGuardDialog(context, guard),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      minimumSize: const Size(0, 0),
+                    ),
+                  ),
                 ),
+              ),
+              if (isFree) ...[
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE53935), Color(0xFFC62828)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.delete_rounded, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      onPressed: () => _deleteGuard(guard['_id']?.toString() ?? ''),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        minimumSize: const Size(0, 0),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -314,42 +598,119 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Add Guard'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.person_add_rounded, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Add Guard',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameCtl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Name',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF1E88E5)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: emailCtl,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF1E88E5)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: phoneCtl,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF1E88E5)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: experienceCtl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Experience (e.g., 5 years)',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.work_outline_rounded, color: Color(0xFF1E88E5)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                    ),
                   ),
                 ),
               ],
@@ -358,10 +719,31 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
           actions: [
             TextButton(
               onPressed: isLoading ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
-            ElevatedButton(
-              onPressed: isLoading ? null : () async {
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1E88E5).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: isLoading ? null : () async {
                 if (nameCtl.text.trim().isEmpty || 
                     emailCtl.text.trim().isEmpty || 
                     phoneCtl.text.trim().isEmpty) {
@@ -413,13 +795,34 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
                   }
                 }
               },
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Add'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      )
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Add',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ],
         ),
@@ -438,42 +841,119 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Edit Guard'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Edit Guard',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameCtl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Name',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF4CAF50)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: emailCtl,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF4CAF50)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: phoneCtl,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF4CAF50)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: experienceCtl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Experience',
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.work_outline_rounded, color: Color(0xFF4CAF50)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    ),
                   ),
                 ),
               ],
@@ -482,10 +962,31 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
           actions: [
             TextButton(
               onPressed: isLoading ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
-            ElevatedButton(
-              onPressed: isLoading ? null : () async {
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: isLoading ? null : () async {
                 setState(() => isLoading = true);
                 try {
                   await _staffApi.updateStaff(
@@ -516,13 +1017,34 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
                   }
                 }
               },
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Update'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      )
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.update_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Update',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ],
         ),
@@ -531,38 +1053,130 @@ class _GuardsManagementPageState extends State<GuardsManagementPage> {
   }
 
   Future<void> _deleteGuard(String guardId) async {
+    if (!mounted) return;
+    
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Guard'),
-        content: const Text('Are you sure you want to delete this guard?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Delete Guard',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text(
+            'Are you sure you want to delete this guard? This action cannot be undone.',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE53935), Color(0xFFC62828)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.delete_rounded, color: Colors.white, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Delete',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
-    if (confirm != true) return;
+    
+    if (confirm != true || !mounted) return;
 
     try {
       await _staffApi.deleteStaff(guardId);
+      if (!mounted) return;
       _loadGuards();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Guard deleted successfully')),
+          const SnackBar(
+            content: Text('Guard deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

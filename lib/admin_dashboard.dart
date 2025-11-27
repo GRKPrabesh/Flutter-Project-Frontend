@@ -40,51 +40,151 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFF5F7FB),
-        title: const Text('Admin Control Room'),
-        actions: [
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final shouldLogout = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Logout'),
-                  content:
-                      const Text('Do you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('No'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Yes'),
-                    ),
-                  ],
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
                 ),
-              );
-              if (shouldLogout == true && context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoute.loginPageRoute,
-                  (route) => false,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Admin Control Room',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              tooltip: 'Logout',
+              icon: const Icon(Icons.logout_rounded, color: Colors.red),
+              onPressed: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      title: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Logout',
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Are you sure you want to logout?',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE53935), Color(0xFFC62828)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
-              }
-            },
+                if (shouldLogout == true && context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoute.loginPageRoute,
+                    (route) => false,
+                  );
+                }
+              },
+            ),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: scheme.primary,
-          labelColor: scheme.primary,
+          indicatorColor: const Color(0xFF1E88E5),
+          indicatorWeight: 3,
+          labelColor: const Color(0xFF1E88E5),
           unselectedLabelColor: Colors.grey,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Organizations'),
-            Tab(text: 'Guards'),
-            Tab(text: 'Orders'),
+            Tab(icon: Icon(Icons.dashboard_rounded), text: 'Overview'),
+            Tab(icon: Icon(Icons.business_rounded), text: 'Organizations'),
+            Tab(icon: Icon(Icons.shield_rounded), text: 'Guards'),
+            Tab(icon: Icon(Icons.shopping_cart_rounded), text: 'Orders'),
           ],
         ),
       ),
@@ -183,23 +283,101 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final org = orgs[index];
-            return Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 3,
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ListTile(
-                contentPadding: const EdgeInsets.all(16),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.indigo.shade50,
-                  child: const Icon(Icons.apartment, color: Colors.indigo),
+                contentPadding: const EdgeInsets.all(20),
+                leading: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1E88E5).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.business_rounded, color: Colors.white, size: 28),
                 ),
-                title: Text(org.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (org.address.isNotEmpty) Text(org.address),
-                    if (org.phone.isNotEmpty) Text('Phone: ${org.phone}'),
-                    if (org.email.isNotEmpty) Text('Email: ${org.email}'),
-                  ],
+                title: Text(
+                  org.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (org.address.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.location_on_rounded, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  org.address,
+                                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (org.phone.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.phone_rounded, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  org.phone,
+                                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (org.email.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(Icons.email_rounded, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                org.email,
+                                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
                 trailing: PopupMenuButton<String>(
                   onSelected: (value) async {
@@ -250,15 +428,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           itemCount: orgs.length,
           itemBuilder: (context, index) {
             final org = orgs[index];
-            return Card(
+            return Container(
               margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ExpansionTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.teal.shade50,
-                  child: const Icon(Icons.apartment, color: Colors.teal),
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.shield_rounded, color: Colors.white, size: 24),
                 ),
-                title: Text(org.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('View guards for ${org.name}'),
+                title: Text(
+                  org.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Text(
+                  'View guards for ${org.name}',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
                 children: [
                   FutureBuilder<List<Map<String, dynamic>>>(
                     future: _adminApi.fetchOrgStaff(org.id),
@@ -363,91 +565,180 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             final status = order['status']?.toString() ?? 'pending';
             final assignedGuard = order['assignedStaffId'];
             
-            return Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                serviceName,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Provider: $orgName',
-                                style: TextStyle(color: Colors.blue[700], fontSize: 14),
-                              ),
-                              Text(
-                                'Client: $clientName',
-                                style: TextStyle(color: Colors.grey[700], fontSize: 14),
-                              ),
-                              if (clientEmail.isNotEmpty)
-                                Text(
-                                  clientEmail,
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: status == 'confirmed' 
-                                ? Colors.green.shade50 
-                                : status == 'completed' 
-                                    ? Colors.blue.shade50 
-                                    : Colors.orange.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            status.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: status == 'confirmed' 
-                                  ? Colors.green.shade700 
-                                  : status == 'completed' 
-                                      ? Colors.blue.shade700 
-                                      : Colors.orange.shade700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (assignedGuard != null) ...[
-                      const SizedBox(height: 8),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        width: 56,
+                        height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.teal.shade50,
-                          borderRadius: BorderRadius.circular(8),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF6B35), Color(0xFFF7931E)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(Icons.shopping_cart_rounded, color: Colors.white, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              serviceName,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(Icons.business_rounded, size: 14, color: Colors.blue.shade700),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    orgName,
+                                    style: TextStyle(color: Colors.blue.shade700, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.person_rounded, size: 14, color: Colors.grey.shade700),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    clientName,
+                                    style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (clientEmail.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.email_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      clientEmail,
+                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: status == 'confirmed'
+                              ? const LinearGradient(colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)])
+                              : status == 'completed'
+                                  ? const LinearGradient(colors: [Color(0xFF1E88E5), Color(0xFF1565C0)])
+                                  : const LinearGradient(colors: [Color(0xFFFF6B35), Color(0xFFF7931E)]),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (status == 'confirmed'
+                                      ? Colors.green
+                                      : status == 'completed'
+                                          ? Colors.blue
+                                          : Colors.orange)
+                                  .withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          status.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (assignedGuard != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.teal.shade50, Colors.teal.shade100.withOpacity(0.5)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.teal.shade200, width: 1),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.shield, size: 16, color: Colors.teal),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Guard: ${assignedGuard['name'] ?? 'Unknown'}',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade600,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.shield_rounded, size: 16, color: Colors.white),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Assigned Guard',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.teal.shade700,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    assignedGuard['name'] ?? 'Unknown',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ],
                   ],
-                ),
+                ],
               ),
             );
           },
@@ -474,17 +765,17 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.42,
-      height: 130,
+      height: 150,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -492,16 +783,39 @@ class _StatCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CircleAvatar(
-              backgroundColor: color.withOpacity(0.12),
-              child: Icon(icon, color: color),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withOpacity(0.7)],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
             ),
-            Text(label, style: const TextStyle(color: Colors.black54)),
+            const Spacer(),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
           ],
@@ -582,30 +896,78 @@ class _UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Icon(icon, color: Colors.black87),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.7)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(subtitle),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
               ],
             ),
           ),
-          Chip(
-            label: Text(role),
-            backgroundColor: Colors.white,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              role,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
       ),

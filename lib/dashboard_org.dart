@@ -7,6 +7,7 @@ import 'api/org_service_api.dart';
 import 'package:securityservice/search_companies_page.dart';
 import 'package:securityservice/guards_management_page.dart';
 import 'package:securityservice/org_orders_page.dart';
+import 'api/auth_state.dart';
 
 class OrganizationDashboardPage extends StatefulWidget {
   final String? displayName; // organization or username
@@ -26,100 +27,238 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FA),
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: Text('Welcome ! ${widget.displayName ?? 'there'}'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E88E5).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.business, color: Color(0xFF1E88E5), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome!',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    widget.displayName ?? 'Organization',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final shouldLogout = await showDialog<bool>(
-                context: context,
-                builder: (ctx) {
-                  final scheme = Theme.of(ctx).colorScheme;
-                  return AlertDialog(
-                    icon: Icon(Icons.logout_rounded, color: scheme.error),
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    actionsAlignment: MainAxisAlignment.end,
-                    actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        child: const Text('Cancel'),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              tooltip: 'Logout',
+              icon: const Icon(Icons.logout_rounded, color: Colors.red),
+              onPressed: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) {
+                    return AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: scheme.error,
-                          foregroundColor: scheme.onError,
+                      title: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.logout_rounded, color: Colors.red, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Logout',
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Are you sure you want to logout?',
+                          style: TextStyle(fontSize: 16),
                         ),
-                        onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text('Logout'),
                       ),
-                    ],
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE53935), Color(0xFFC62828)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                if (shouldLogout == true && context.mounted) {
+                  AuthState.clear();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoute.loginPageRoute,
+                    (route) => false,
                   );
-                },
-              );
-              if (shouldLogout == true) {
-                // Navigate to Login and clear stack
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-              }
-            },
+                }
+              },
+            ),
           ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Transform.translate(
         offset: const Offset(0, 12),
-        child: SizedBox(
-          height: 58,
-          width: 58,
+        child: Container(
+          height: 64,
+          width: 64,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFE53935), Color(0xFFC62828)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: FloatingActionButton(
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('SOS triggered')),
+                SnackBar(
+                  content: const Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text('SOS triggered - Emergency services notified'),
+                    ],
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               );
             },
-            child: const Text('SOS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: const Text(
+              'SOS',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                letterSpacing: 1,
+              ),
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.home, color: _tabIndex == 0 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 0),
-              tooltip: 'Home',
-            ),
-            IconButton(
-              icon: Icon(Icons.search, color: _tabIndex == 1 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 1),
-              tooltip: 'Search',
-            ),
-            const SizedBox(width: 24),
-            IconButton(
-              icon: Icon(Icons.assignment_outlined, color: _tabIndex == 2 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 2),
-              tooltip: 'Orders',
-            ),
-            IconButton(
-              icon: Icon(Icons.shield, color: _tabIndex == 3 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => setState(() => _tabIndex = 3),
-              tooltip: 'Guards',
-            ),
-            IconButton(
-              icon: Icon(Icons.person_outline, color: _tabIndex == 4 ? const Color(0xFF1E88E5) : Colors.black54),
-              onPressed: () => Navigator.pushNamed(context, AppRoute.profileRoute),
-              tooltip: 'Profile',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
           ],
+        ),
+        child: BottomAppBar(
+          height: 76,
+          color: Colors.transparent,
+          elevation: 0,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 12,
+          padding: EdgeInsets.zero,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildNavItem(Icons.home_rounded, 'Home', 0),
+              _buildNavItem(Icons.search_rounded, 'Search', 1),
+              const SizedBox(width: 40),
+              _buildNavItem(Icons.assignment_rounded, 'Orders', 2),
+              _buildNavItem(Icons.shield_rounded, 'Guards', 3),
+              _buildNavItem(Icons.person_outline_rounded, 'Profile', 4, isProfile: true),
+            ],
+          ),
         ),
       ),
       body: Stack(
@@ -128,16 +267,31 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
           // Small '+' FAB above the Profile icon (bottom-right)
           Positioned(
             right: 10,
-            bottom: 24, // closer to the Profile icon on BottomAppBar
-            child: Transform.scale(
-              scale: 0.85,
-              child: FloatingActionButton.small(
+            bottom: 24,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1E88E5).withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
                 heroTag: 'fab_add_service_small',
-                backgroundColor: const Color(0xFF1E88E5),
-                elevation: 5,
-                shape: const StadiumBorder(),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
                 onPressed: () => _openAddServiceSheet(context),
-                child: const Icon(Icons.add, color: Colors.white),
+                child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
               ),
             ),
           ),
@@ -183,7 +337,7 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
     return RefreshIndicator(
       onRefresh: _loadServices,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
         children: [
           _headerCard(),
           const SizedBox(height: 16),
@@ -238,73 +392,220 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
     );
   }
 
+  Widget _buildNavItem(IconData icon, String label, int index, {bool isProfile = false}) {
+    final isSelected = _tabIndex == index;
+    return GestureDetector(
+      onTap: () {
+        if (isProfile) {
+          Navigator.pushNamed(context, AppRoute.profileRoute);
+        } else {
+          setState(() => _tabIndex = index);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1E88E5).withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF1E88E5) : Colors.grey.shade600,
+              size: 22,
+            ),
+            const SizedBox(height: 1),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isSelected ? const Color(0xFF1E88E5) : Colors.grey.shade600,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                height: 1.0,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _headerCard() {
     return Container(
-      height: 120,
+      height: 140,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: [const Color(0xFF1E88E5), const Color(0xFF64B5F6)],
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: const Color(0xFF1E88E5).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'Welcome ! ${widget.displayName ?? 'there'}',
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Welcome back!',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.displayName ?? 'Organization',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.business_center_rounded,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _serviceTile(String name, String desc, String price, {String? serviceType, String? serviceId}) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: const Color(0xFFE8F1FD), borderRadius: BorderRadius.circular(8)),
-            child: const Icon(Icons.shield_outlined, color: Color(0xFF1E88E5)),
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1E88E5).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.shield_rounded, color: Colors.white, size: 28),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                    ),
                     if (serviceType != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E88E5).withOpacity(0.1),
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF1E88E5).withOpacity(0.15),
+                              const Color(0xFF1565C0).withOpacity(0.15),
+                            ],
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           serviceType,
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF1E88E5), fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF1E88E5),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
-                Text(price, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  desc,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        price,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -367,9 +668,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                         decoration: InputDecoration(
                           labelText: 'Service Name',
                           hintText: 'Enter service name',
+                          prefixIcon: const Icon(Icons.label_outline, color: Color(0xFF1E88E5)),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                          ),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Service name is required' : null,
                       ),
@@ -395,9 +708,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                                 decoration: InputDecoration(
                                   labelText: 'Service Type',
                                   hintText: 'Select service type',
+                                  prefixIcon: const Icon(Icons.category_outlined, color: Color(0xFF1E88E5)),
                                   filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  fillColor: Colors.grey.shade50,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                                  ),
                                 ),
                                 items: [
                                   ...serviceTypes.map((e) => DropdownMenuItem(
@@ -435,9 +760,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                                   decoration: InputDecoration(
                                     labelText: 'New Service Type Name',
                                     hintText: 'Enter new service type',
+                                    prefixIcon: const Icon(Icons.add_business_outlined, color: Color(0xFF4CAF50)),
                                     filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    fillColor: Colors.grey.shade50,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                    ),
                                   ),
                                   validator: showAddTypeField
                                       ? (v) => (v == null || v.trim().isEmpty) ? 'Service type name is required' : null
@@ -450,19 +787,52 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                                   decoration: InputDecoration(
                                     labelText: 'Service Type Description (Optional)',
                                     hintText: 'Enter description',
+                                    prefixIcon: const Icon(Icons.description_outlined, color: Color(0xFF4CAF50)),
                                     filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    fillColor: Colors.grey.shade50,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                    ),
                                   ),
                                 ),
-                                ElevatedButton.icon(
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Create Service Type'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
+                                Container(
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.green.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
-                                  onPressed: () async {
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.add_rounded, size: 20),
+                                    label: const Text(
+                                      'Create Service Type',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () async {
                                     if (newTypeNameCtl.text.trim().isEmpty) {
                                       ScaffoldMessenger.of(ctx).showSnackBar(
                                         const SnackBar(content: Text('Please enter service type name')),
@@ -495,6 +865,7 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                                     }
                                   },
                                 ),
+                                ),
                               ],
                             ],
                           );
@@ -507,9 +878,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                         decoration: InputDecoration(
                           labelText: 'Description',
                           hintText: 'Enter service description',
+                          prefixIcon: const Icon(Icons.description_outlined, color: Color(0xFF1E88E5)),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                          ),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
                       ),
@@ -520,9 +903,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                         decoration: InputDecoration(
                           labelText: 'Cost',
                           hintText: 'Enter cost (e.g., 1500)',
+                          prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF1E88E5)),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                          ),
                           prefixText: 'Rs. ',
                         ),
                         validator: (v) {
@@ -539,9 +934,21 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                         decoration: InputDecoration(
                           labelText: 'Hourly Rate (Rs.)',
                           hintText: 'Enter hourly rate (default: 300)',
+                          prefixIcon: const Icon(Icons.access_time, color: Color(0xFF1E88E5)),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+                          ),
                           prefixText: 'Rs. ',
                           helperText: 'Rate per hour for this service',
                         ),
@@ -552,14 +959,29 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 52,
+                      const SizedBox(height: 20),
+                      Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1E88E5).withOpacity(0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E88E5),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
                           onPressed: isLoading ? null : () async {
                             if (!formKey.currentState!.validate()) return;
@@ -600,11 +1022,25 @@ class _OrganizationDashboardPageState extends State<OrganizationDashboardPage> {
                           },
                           child: isLoading
                               ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                                 )
-                              : const Text('ADD SERVICE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_circle_outline, color: Colors.white, size: 22),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'ADD SERVICE',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
                       ),
                     ],

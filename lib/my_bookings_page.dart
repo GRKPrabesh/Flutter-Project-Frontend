@@ -35,152 +35,383 @@ class MyBookingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Booking>>(
-      future: _api.fetchBookings(),
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snap.hasError) {
-          return const Center(child: Text('Failed to load bookings'));
-        }
-        final items = snap.data ?? [];
-        if (items.isEmpty) return const Center(child: Text('No bookings yet'));
-        return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, i) {
-            final b = items[i];
-            return Container(
-              padding: const EdgeInsets.all(16),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF6B35), Color(0xFFF7931E)],
+                ),
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 3))],
-                border: Border.all(
-                  color: _badgeColor(b.status).withOpacity(0.3),
-                  width: 1,
+              ),
+              child: const Icon(Icons.shopping_cart_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'My Bookings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
                 ),
               ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(
+            ),
+          ],
+        ),
+      ),
+      body: FutureBuilder<List<Booking>>(
+        future: _api.fetchBookings(),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline_rounded, size: 64, color: Colors.red.shade300),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Failed to load bookings',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            );
+          }
+          final items = snap.data ?? [];
+          if (items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 64,
+                      color: Color(0xFFFF6B35),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'No bookings yet',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Book a service to see it here',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                  ),
+                ],
+              ),
+            );
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: items.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, i) {
+              final b = items[i];
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: _badgeColor(b.status).withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _badgeColor(b.status),
+                                _badgeColor(b.status).withValues(alpha: 0.7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _badgeColor(b.status).withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                b.serviceTitle,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.business_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    b.orgName,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _badgeColor(b.status),
+                                _badgeColor(b.status).withValues(alpha: 0.8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _badgeColor(b.status).withValues(alpha: 0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _label(b.status),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E88E5).withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF1E88E5).withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
                         children: [
-                          Text(b.serviceTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                          const SizedBox(height: 4),
-                          Text('by ${b.orgName}', style: const TextStyle(color: Colors.black54)),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E88E5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.calendar_today_rounded, size: 16, color: Colors.white),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat('MMM d, y').format(b.date),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                                if (b.time != null)
+                                  Text(
+                                    'at ${b.time}',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  ),
+                                if (b.durationDays > 1)
+                                  Text(
+                                    '${b.durationDays} days',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(color: _badgeColor(b.status), borderRadius: BorderRadius.circular(16)),
-                      child: Text(_label(b.status), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                            const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.currency_rupee_rounded, size: 16, color: Colors.white),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'NPR ${b.price}',
+                            style: const TextStyle(
+                              color: Color(0xFF2E7D32),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${DateFormat('MMM d, y').format(b.date)}${b.time != null ? ' at ${b.time}' : ''}',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    if (b.durationDays > 1) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '(${b.durationDays} days)',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    if (b.assignedGuard != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.teal.shade50,
+                              Colors.teal.shade100.withValues(alpha: 0.5),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.teal.shade200, width: 1),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.shade600,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.shield_rounded, size: 16, color: Colors.white),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Assigned Guard',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.teal.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Icon(Icons.person_rounded, size: 16, color: Colors.grey.shade600),
+                                const SizedBox(width: 6),
+                                Text(
+                                  b.assignedGuard!['name']?.toString() ?? 'Unknown',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (b.assignedGuard!['phone']?.toString().isNotEmpty ?? false) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Icon(Icons.phone_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    b.assignedGuard!['phone']?.toString() ?? '',
+                                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (b.assignedGuard!['experience']?.toString().isNotEmpty ?? false) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Icon(Icons.work_outline_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Experience: ${b.assignedGuard!['experience']}',
+                                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.currency_rupee, size: 16, color: Color(0xFF11B47A)),
-                    const SizedBox(width: 6),
-                    Text('NPR ${b.price}', style: const TextStyle(color: Color(0xFF11B47A), fontWeight: FontWeight.w700)),
-                  ],
-                ),
-                if (b.assignedGuard != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.shade200, width: 1),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.shield, size: 18, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Assigned Guard',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.person, size: 16, color: Colors.grey),
-                            const SizedBox(width: 6),
-                            Text(
-                              b.assignedGuard!['name']?.toString() ?? 'Unknown',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                        if (b.assignedGuard!['phone']?.toString().isNotEmpty ?? false) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.phone, size: 16, color: Colors.grey),
-                              const SizedBox(width: 6),
-                              Text(
-                                b.assignedGuard!['phone']?.toString() ?? '',
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (b.assignedGuard!['experience']?.toString().isNotEmpty ?? false) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.work_outline, size: 16, color: Colors.grey),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Experience: ${b.assignedGuard!['experience']}',
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ]),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
